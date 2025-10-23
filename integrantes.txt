@@ -1,0 +1,6 @@
+GRUPO: grupo_py
+
+Integrantes:
+- Sofía Macarena Mendoza
+- Thelma D. Teileche
+- Yamila Valdez Aguilar
