@@ -3,3 +3,5 @@
 [2025-10-23 20:26:14] listar args=(<catalogo_peliculas.CatalogoPeliculas object at 0x10ad557f0>,) kwargs={} -> OK
 [2025-10-23 20:26:14] agregar args=(<catalogo_peliculas.CatalogoPeliculas object at 0x10ad557f0>, Pelicula(_Obra__nombre='diario de una pasion')) kwargs={} -> OK
 [2025-10-23 20:26:18] listar args=(<catalogo_peliculas.CatalogoPeliculas object at 0x10ad557f0>,) kwargs={} -> OK
+[2025-10-23 20:29:02] listar args=(<catalogo_peliculas.CatalogoPeliculas object at 0x106d8d550>,) kwargs={} -> OK
+[2025-10-23 20:29:02] agregar args=(<catalogo_peliculas.CatalogoPeliculas object at 0x106d8d550>, Pelicula(_Obra__nombre='bla')) kwargs={} -> OK
