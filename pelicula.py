@@ -1,31 +1,36 @@
 # pelicula.py
 from dataclasses import dataclass
+from utils import normalizar_espacios
 
 @dataclass
-class Pelicula:
-    # Atributo privado (requisito del enunciado)
+class Obra:
+    # Atributo privado exigido por el enunciado
     __nombre: str
 
     def __init__(self, nombre: str):
-        nombre = nombre.strip()
+        nombre = (nombre or "").strip()
         if not nombre:
-            raise ValueError("El nombre de la película no puede estar vacío.")
-        # normalizamos espacios internos
-        self.__nombre = " ".join(nombre.split())
+            raise ValueError("El nombre no puede estar vacío.")
+        self.__nombre = normalizar_espacios(nombre)
 
-    # Propiedad solo-lectura para exponer el nombre de forma controlada
     @property
     def nombre(self) -> str:
         return self.__nombre
 
-    # Representación en archivo (una película por línea)
     def to_line(self) -> str:
         return self.__nombre
 
-    # Creador desde línea de archivo
     @staticmethod
-    def from_line(line: str) -> "Pelicula":
-        return Pelicula(line.strip())
+    def from_line(linea: str) -> "Obra":
+        return Obra(linea.strip())
 
     def __str__(self) -> str:
         return self.__nombre
+
+@dataclass
+class Pelicula(Obra):
+    """
+    Subclase concreta. En el futuro podrían agregar campos como 'género' o 'año'.
+    Por ahora hereda toda la lógica de Obra.
+    """
+    pass

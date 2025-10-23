@@ -15,7 +15,6 @@ def main():
     nombre_catalogo = input("Ingresá el nombre del catálogo de películas: ").strip()
     catalogo = CatalogoPeliculas(nombre_catalogo)
 
-    # Si el archivo no existe, queda creado al primer 'agregar'.
     print(f"\nCatálogo seleccionado: '{catalogo.nombre}' -> {catalogo.ruta_archivo}")
 
     while True:
@@ -25,8 +24,10 @@ def main():
             titulo = input("Nombre de la película a agregar: ").strip()
             try:
                 peli = Pelicula(titulo)
-                catalogo.agregar(peli)
-                print(f"✅ Película agregada: {peli}")
+                if catalogo.agregar(peli):
+                    print(f"✅ Película agregada: {peli}")
+                else:
+                    print("⚠️ Esa película ya existe en el catálogo (no se duplicó).")
             except ValueError as e:
                 print(f"⚠️ {e}")
 
@@ -35,7 +36,7 @@ def main():
             if not peliculas:
                 print("📭 El catálogo está vacío (o todavía no existe el archivo).")
             else:
-                print("\n🎬 Películas del catálogo:")
+                print("\n🎬 Películas del catálogo (ordenadas A→Z):")
                 for i, p in enumerate(peliculas, start=1):
                     print(f"  {i}. {p}")
 
