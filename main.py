@@ -1,6 +1,5 @@
 # grupo_py.py
 """
-Archivo requerido por el enunciado para entregas en grupo.
 Ejecuta la aplicación principal y expone metadatos del equipo.
 """
 
