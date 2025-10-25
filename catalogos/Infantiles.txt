@@ -1,11 +1,11 @@
-Toy story
-Monster inc
-Cars
-Bichos | Desconocido | 0
-Mulan | Desconocido | 0
-Hercules | Desconocido | 0
-Lilo y Stich | Desconocido | 0
-Buscando a nemo | Desconocido | 0
-El rey leon | Desconocido | 0
-La bella y la bestia | Desconocido | 0
-la bella duermiente | Infantiles | 0
+Toy story | Infantiles | 1995
+Monster inc | Infantiles | 2001
+Cars | Infantiles | 2006
+Bichos: una aventura en miniatura | Infantiles | 1998
+Mulan | Infantiles | 1998
+Hercules | Infantiles | 1997
+Lilo y Stitch | Infantiles | 2002
+Buscando a nemo | Infantiles | 2003
+El rey leon | Infantiles | 1994
+La bella y la bestia | Infantiles | 1991
+La bella duermiente | Infantiles | 1959
