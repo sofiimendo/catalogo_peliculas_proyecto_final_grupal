@@ -1,12 +1,20 @@
-# grupo_py.py
+# main.py
 """
-Ejecuta la aplicación principal y expone metadatos del equipo.
-"""
+Archivo principal de ejecución del proyecto:
+🎬 Catálogo de Películas — Proyecto Final ADA (So + Thel + Yami)
 
-GRUPO = "grupo_py"
-INTEGRANTES = ["Sofía Macarena Mendoza", "Thelma D. Teileche", "Yamila Valdez Aguilar"]
+Este script lanza la aplicación principal y define los metadatos del grupo.
+"""
 
 from app import main
+
+# Identificación del grupo
+GRUPO = "main"
+INTEGRANTES = [
+    "Sofía Macarena Mendoza",
+    "Thelma D. Teileche",
+    "Yamila Valdez Aguilar",
+]
 
 if __name__ == "__main__":
     main()
