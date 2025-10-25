@@ -67,22 +67,26 @@ Ambas versiones comparten la misma lógica de negocio y clases internas (`Film`,
 ##💻 Modo gráfico (Flet)
 
 1️⃣ Instalar dependencias:
-    ```bash
+
+```
+    bash
     python -m pip install flet
-    ````
+```
 
 2️⃣ Ejecutar la versión gráfica:
-    ```bash
+```
+    bash
     python gui_flet.py
-    ```
+```
 Se abrirá una ventana con una interfaz amigable para crear, listar y gestionar catálogos de películas.
 
 ##🎞️ Modo consola
 
 1️⃣ Ejecutar el programa principal:
-
-python main.py
-
+```
+    bash
+    python main.py
+``
 
 2️⃣ Seguir las opciones del menú:
 
@@ -105,8 +109,8 @@ Las películas se listan de forma ordenada y pueden eliminarse individualmente.
 Los decoradores registran acciones y tiempos de ejecución en archivos .log.
 
 ##🎨 Interfaz Flet
-Fu
-ncionalidades principales:
+
+Funcionalidades principales:
 
 Crear nuevos catálogos.
 

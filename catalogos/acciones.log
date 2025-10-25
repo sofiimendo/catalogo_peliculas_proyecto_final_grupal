@@ -51,3 +51,4 @@
 [2025-10-24 12:47:16] listar args=(<catalogo_peliculas.CatalogoPeliculas object at 0x1054779d0>,) kwargs={} -> OK
 [2025-10-24 12:47:35] agregar args=(<catalogo_peliculas.CatalogoPeliculas object at 0x105477890>, Pelicula(_Film__nombre='la bella duermiente', genero='Infantiles', anio=0)) kwargs={} -> OK
 [2025-10-24 12:47:35] listar args=(<catalogo_peliculas.CatalogoPeliculas object at 0x105453490>,) kwargs={} -> OK
+[2025-10-25 11:21:11] listar args=(<catalogo_peliculas.CatalogoPeliculas object at 0x112516ba0>,) kwargs={} -> OK
