@@ -1,10 +1,10 @@
-Ataque a la Casa Blanca
-Maxima velocidad
-Hombre en llamas
-Gladiador
-El juicio final
-Mad max: furia en la carretera
-John Wick
-Fuego contra Fuego
-El perfecto asesino
-Kill Bill
+Ataque a la Casa Blanca | Accion | 2013
+Maxima velocidad | Accion | 1994
+Hombre en llamas | Accion | 2004
+Gladiador | Accion | 2000
+El juicio final | Accion | 2014
+Mad max: furia en la carretera | Accion | 2015
+John Wick | Accion | 2014
+Fuego contra Fuego | Accion | 1995
+El perfecto asesino | Accion | 1994
+Kill Bill | Accion | 2003
