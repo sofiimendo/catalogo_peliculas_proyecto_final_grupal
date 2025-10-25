@@ -1,10 +1,10 @@
-Chicas Pesadas | Desconocido | 0
-Click | Desconocido | 0
-La Mascara | Desconocido | 0
-¿Que paso ayer? | Desconocido | 0
-Scary movie | Desconocido | 0
-Shrek | Desconocido | 0
-¿...Y donde estan las rubias? | Desconocido | 0
-Si tuviera 30 | Desconocido | 0
-Ace ventura | Desconocido | 0
-Beetlejuice | Desconocido | 0
+Chicas Pesadas | Comedia | 2004
+Click: perdiendo el control | Comedia | 2006
+La Mascara | Comedia | 1994
+¿Que paso ayer? | Comedia | 2009
+Scary movie | Comedia | 2000
+Shrek | Comedia | 2001
+¿...Y donde estan las rubias? | Comedia | 2004
+Si tuviera 30 | Comedia | 2004
+Ace ventura | Comedia | 1994
+Beetlejuice | Comedia | 1988
