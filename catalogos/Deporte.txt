@@ -1,10 +1,10 @@
-Karate kid | Desconocido | 0
-Un sueño posible | Desconocido | 0
-El juego de la fortuna | Desconocido | 0
-Elijo creer | Desconocido | 0
-Rey richard | Desconocido | 0
-Space jam | Desconocido | 0
-Women of troy | Desconocido | 0
-Un juego contra el destino | Desconocido | 0
-Tyson | Desconocido | 0
-Invictus | Desconocido | 0
+Karate kid | Deporte | 1984
+Un sueño posible | Deporte | 2009
+El juego de la fortuna | Deporte | 2011
+Elijo creer: el camino del campeon | Deporte | 2023
+Rey richard: una familia ganadora | Deporte | 2021
+Space jam: el juego del siglo | Deporte | 1996
+Women of troy | Deporte | 2020
+Un juego contra el destino | Deporte | 2006
+Tyson | Deporte | 1995
+Invictus | Deporte | 2009
