@@ -1,12 +1,12 @@
-# gui_flet.py
+# gui_flet.py 
 import os
 import flet as ft
 from pelicula import Pelicula
 from catalogo_peliculas import CatalogoPeliculas
 from utils import BASE_DIR_CATALOGOS, normalizar_espacios
 
+# ===================== helpers de archivos =====================
 
-# ---------- helpers ----------
 def listar_catalogos() -> list[str]:
     if not os.path.exists(BASE_DIR_CATALOGOS):
         os.makedirs(BASE_DIR_CATALOGOS, exist_ok=True)
@@ -16,217 +16,295 @@ def listar_catalogos() -> list[str]:
         key=str.lower,
     )
 
-
 def ruta_catalogo(nombre: str) -> str:
     return os.path.join(BASE_DIR_CATALOGOS, f"{nombre}.txt")
-
 
 def reescribir_catalogo(catalogo: CatalogoPeliculas, peliculas: list[Pelicula]) -> None:
     with open(catalogo.ruta_archivo, "w", encoding="utf-8") as f:
         for p in peliculas:
             f.write(p.to_line() + "\n")
 
+# ===================== UI principal =====================
 
-# ---------- app ----------
+PALETTE = {
+    "bg": "#FAF7FB",           # fondo general
+    "panel": "#FFFFFF",        # tarjetas y paneles
+    "accent": "#EC407A",       # rosa fuerte
+    "accent_soft": "#F8BBD0",  # rosa pastel
+    "mint": "#E0F7FA",
+    "lav": "#EDE7F6",
+    "text": "#37474F",
+    "muted": "#7A8084",
+    "shadow": "#00000020",
+}
+
+def chip(texto: str, color_bg: str) -> ft.Container:
+    return ft.Container(
+        content=ft.Text(texto, size=11, weight=ft.FontWeight.W_600, color=PALETTE["text"]),
+        padding=ft.padding.symmetric(6, 8),
+        bgcolor=color_bg,
+        border_radius=16,
+    )
+
+def make_toast(page: ft.Page, msg: str, ok: bool = True):
+    bg = "#B9F6CA" if ok else "#FF8A80"
+    page.snack_bar = ft.SnackBar(content=ft.Text(msg), bgcolor=bg, show_close_icon=True)
+    page.snack_bar.open = True
+    page.update()
+
 def main(page: ft.Page):
-    page.title = "Catálogo de Películas — So + Thel + Yami"
-    page.window_width = 980
-    page.window_height = 680
-    page.padding = 16
+    # ---------- page setup ----------
+    page.title = "Catálogo de Películas — So · Thel · Yami"
+    page.bgcolor = PALETTE["bg"]
+    page.padding = 0
+    page.window_width = 1080
+    page.window_height = 720
     page.scroll = "auto"
 
-    # Estado
-    catalogos = listar_catalogos()
+    # ---------- estado ----------
+    seleccionadas_keys: set[str] = set()  # para selección múltiple
+    grid = ft.GridView(
+        expand=True,
+        runs_count=4,              # cuántas columnas aprox (se adapta)
+        max_extent=None,           # usar runs_count
+        child_aspect_ratio=1.6,    # ancho/alto de cada tarjeta
+        spacing=14,
+        run_spacing=14,
+        padding=16,
+    )
 
-    catalogo_sel = ft.Dropdown(
+    def peli_key(p: Pelicula) -> str:
+        return f"{p.nombre}|{getattr(p, 'anio', 0)}"
+
+    # ---------- header "hero" ----------
+    hero = ft.Container(
+        padding=ft.padding.symmetric(18, 20),
+        gradient=ft.LinearGradient(
+            begin=ft.alignment.top_left,
+            end=ft.alignment.bottom_right,
+            colors=["#FFE3EC", "#E8F7FF", "#F3E8FF"],   # pastel
+        ),
+        content=ft.Row(
+            alignment=ft.MainAxisAlignment.SPACE_BETWEEN,
+            vertical_alignment=ft.CrossAxisAlignment.CENTER,
+            controls=[
+                ft.Column(
+                    spacing=2,
+                    controls=[
+                        ft.Text("Catálogo de Películas", size=24, weight=ft.FontWeight.W_700, color=PALETTE["text"]),
+                        ft.Text("Proyecto Final · ADA", size=12, color=PALETTE["muted"]),
+                    ],
+                ),
+                chip("So + Thel + Yami", PALETTE["mint"]),
+            ],
+        ),
+    )
+
+    # ---------- panel lateral (catálogos) ----------
+    catalogos = listar_catalogos()
+    dd_catalogo = ft.Dropdown(
         label="Catálogo",
         hint_text="Elegí un catálogo…",
         options=[ft.dropdown.Option(c) for c in catalogos],
-        width=320,
+        width=280,
     )
-    btn_refrescar = ft.IconButton(icon="refresh")
+    btn_refresh = ft.IconButton(icon="refresh")
+    tf_new_cat = ft.TextField(label="Nuevo catálogo", width=220, bgcolor=PALETTE["panel"])
+    btn_crear_cat = ft.ElevatedButton("Crear", icon="add", bgcolor=PALETTE["accent"], color="white")
 
-    nuevo_catalogo = ft.TextField(label="Nuevo catálogo", width=260)
-    btn_crear_catalogo = ft.ElevatedButton("Crear catálogo", icon="add")
+    # inputs película (género se deriva del catálogo)
+    tf_titulo = ft.TextField(label="Título", width=280, bgcolor=PALETTE["panel"])
+    tf_anio = ft.TextField(label="Año (opcional)", width=130, bgcolor=PALETTE["panel"])
+    btn_add = ft.FilledButton("Agregar", icon="movie", bgcolor=PALETTE["accent"], color="white")
 
-    tf_nombre = ft.TextField(label="Título", expand=True)
-    tf_anio = ft.TextField(label="Año (opcional)", width=150)
-    btn_agregar = ft.FilledButton("Agregar", icon="movie")
+    btn_delete_sel = ft.OutlinedButton("Eliminar seleccionadas", icon="delete_outline")
 
-    tabla = ft.DataTable(
-        columns=[
-            ft.DataColumn(ft.Text("#")),
-            ft.DataColumn(ft.Text("Título")),
-            ft.DataColumn(ft.Text("Género")),
-            ft.DataColumn(ft.Text("Año")),
-        ],
-        rows=[],
-        column_spacing=24,
-        heading_row_height=40,
-        data_row_min_height=36,
-        show_checkbox_column=True,
+    info_label = ft.Text("", size=12, color=PALETTE["muted"])
+
+    side_panel = ft.Container(
+        width=340,
+        bgcolor=PALETTE["panel"],
+        padding=16,
+        border_radius=20,
+        shadow=ft.BoxShadow(blur_radius=16, color=PALETTE["shadow"]),
+        content=ft.Column(
+            spacing=14,
+            controls=[
+                ft.Row([dd_catalogo, btn_refresh], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                ft.Row([tf_new_cat, btn_crear_cat], alignment=ft.MainAxisAlignment.SPACE_BETWEEN),
+                ft.Divider(),
+                ft.Text("Agregar película", size=14, weight=ft.FontWeight.W_600, color=PALETTE["text"]),
+                ft.Row([tf_titulo], alignment=ft.MainAxisAlignment.START),
+                ft.Row([tf_anio], alignment=ft.MainAxisAlignment.START),
+                btn_add,
+                ft.Divider(),
+                btn_delete_sel,
+                info_label,
+            ],
+        ),
     )
 
-    btn_eliminar_sel = ft.OutlinedButton("Eliminar seleccionadas", icon="delete_outline")
-    info_catalogo = ft.Text("", size=12, color="#777777")  # color manual en vez de ft.colors.GREY
+    # ---------- tarjeta de película (estilo pinterest) ----------
+    def tarjeta_pelicula(p: Pelicula) -> ft.Container:
+        k = peli_key(p)
+        checked = k in seleccionadas_keys
 
-    # Snackbar helper
-    def toast(msg: str, ok: bool = True):
-        bg = "#B9F6CA" if ok else "#FF8A80"  # verde claro / rojo claro
-        page.snack_bar = ft.SnackBar(content=ft.Text(msg), bgcolor=bg, show_close_icon=True)
-        page.snack_bar.open = True
-        page.update()
+        def toggle_select(e):
+            if k in seleccionadas_keys:
+                seleccionadas_keys.remove(k)
+                btn_sel.icon = "check_box_outline_blank"
+            else:
+                seleccionadas_keys.add(k)
+                btn_sel.icon = "check_box"
+            page.update()
 
-    # Carga tabla
-    def cargar_tabla(nombre_cat: str):
+        btn_sel = ft.IconButton(icon=("check_box" if checked else "check_box_outline_blank"))
+        title = ft.Text(p.nombre, size=16, weight=ft.FontWeight.W_700, color=PALETTE["text"], no_wrap=False)
+        badge_gen = chip(getattr(p, "genero", ""), PALETTE["lav"])
+        badge_year = chip(str(getattr(p, "anio", "") or "—"), PALETTE["mint"])
+
+        return ft.Container(
+            bgcolor=PALETTE["panel"],
+            border_radius=20,
+            padding=14,
+            shadow=ft.BoxShadow(blur_radius=16, color=PALETTE["shadow"]),
+            content=ft.Column(
+                spacing=10,
+                controls=[
+                    ft.Row([title, btn_sel], alignment=ft.MainAxisAlignment.SPACE_BETWEEN, vertical_alignment=ft.CrossAxisAlignment.START),
+                    ft.Container(height=2, bgcolor=PALETTE["accent_soft"]),
+                    ft.Row([badge_gen, badge_year], spacing=8),
+                ],
+            ),
+        )
+
+    # ---------- carga del grid ----------
+    def cargar_grid(nombre_cat: str):
+        seleccionadas_keys.clear()
+        grid.controls = []
         if not nombre_cat:
-            tabla.rows = []
-            info_catalogo.value = "Sin catálogo seleccionado."
+            info_label.value = "Elegí o creá un catálogo para comenzar."
             page.update()
             return
-        catalogo = CatalogoPeliculas(nombre_cat)
-        pelis = catalogo.listar()
-        tabla.rows = []
-        for idx, p in enumerate(pelis, start=1):
-            tabla.rows.append(
-                ft.DataRow(
-                    cells=[
-                        ft.DataCell(ft.Text(str(idx))),
-                        ft.DataCell(ft.Text(p.nombre)),
-                        ft.DataCell(ft.Text(getattr(p, "genero", ""))),
-                        ft.DataCell(ft.Text(str(getattr(p, "anio", "") or ""))),
-                    ]
-                )
-            )
-        info_catalogo.value = f"Archivo: {catalogo.ruta_archivo} — {len(pelis)} película(s)"
+        cat = CatalogoPeliculas(nombre_cat)
+        pelis = cat.listar()
+        for p in pelis:
+            grid.controls.append(tarjeta_pelicula(p))
+        info_label.value = f"Archivo: {cat.ruta_archivo} — {len(pelis)} película(s)"
         page.update()
 
-    # Eventos
-    def on_refrescar(e):
-        catalogo_sel.options = [ft.dropdown.Option(c) for c in listar_catalogos()]
+    # ===================== eventos =====================
+
+    def on_refresh(e):
+        dd_catalogo.options = [ft.dropdown.Option(c) for c in listar_catalogos()]
         page.update()
-        if catalogo_sel.value:
-            cargar_tabla(catalogo_sel.value)
+        if dd_catalogo.value:
+            cargar_grid(dd_catalogo.value)
 
-    def on_cambiar_catalogo(e):
-        cargar_tabla(catalogo_sel.value)
+    def on_change_catalogo(e):
+        cargar_grid(dd_catalogo.value)
 
-    def on_crear_catalogo(e):
-        nombre = normalizar_espacios(nuevo_catalogo.value or "")
+    def on_create_catalogo(e):
+        nombre = normalizar_espacios(tf_new_cat.value or "")
         if not nombre:
-            toast("El nombre del catálogo no puede estar vacío.", ok=False)
+            make_toast(page, "El nombre del catálogo no puede estar vacío.", ok=False)
             return
         path = ruta_catalogo(nombre)
         if os.path.exists(path):
-            toast("Ya existe un catálogo con ese nombre.", ok=False)
+            make_toast(page, "Ya existe un catálogo con ese nombre.", ok=False)
             return
         open(path, "w", encoding="utf-8").close()
-        toast(f"Catálogo '{nombre}' creado.")
-        catalogo_sel.options = [ft.dropdown.Option(c) for c in listar_catalogos()]
-        catalogo_sel.value = nombre
-        nuevo_catalogo.value = ""
+        make_toast(page, f"Catálogo '{nombre}' creado.")
+        dd_catalogo.options = [ft.dropdown.Option(c) for c in listar_catalogos()]
+        dd_catalogo.value = nombre
+        tf_new_cat.value = ""
         page.update()
-        cargar_tabla(nombre)
+        cargar_grid(nombre)
 
-    def on_agregar_pelicula(e):
-        nombre = normalizar_espacios(tf_nombre.value or "")
+    def on_add_pelicula(e):
+        if not dd_catalogo.value:
+            make_toast(page, "Elegí un catálogo primero.", ok=False)
+            return
+        titulo = normalizar_espacios(tf_titulo.value or "")
+        if not titulo:
+            make_toast(page, "El título no puede estar vacío.", ok=False)
+            return
         anio_str = (tf_anio.value or "").strip()
         anio = 0
         if anio_str:
             try:
                 anio = int(anio_str)
             except ValueError:
-                toast("Año inválido. Se guardará sin año.", ok=False)
+                make_toast(page, "Año inválido. Se guardará sin año.", ok=False)
                 anio = 0
 
-        if not catalogo_sel.value:
-            toast("Elegí un catálogo primero.", ok=False)
-            return
-        if not nombre:
-            toast("El título no puede estar vacío.", ok=False)
-            return
-
-        genero_derive = normalizar_espacios(catalogo_sel.value).capitalize()
-        p = Pelicula(nombre, genero_derive, anio)
-        catalogo = CatalogoPeliculas(catalogo_sel.value)
-        if catalogo.agregar(p):
-            toast(f"'{p.nombre}' agregada correctamente.")
-            tf_nombre.value = ""
+        genero = normalizar_espacios(dd_catalogo.value).capitalize()
+        p = Pelicula(titulo, genero, anio)
+        cat = CatalogoPeliculas(dd_catalogo.value)
+        if cat.agregar(p):
+            make_toast(page, f"'{p.nombre}' agregada.")
+            tf_titulo.value = ""
             tf_anio.value = ""
             page.update()
-            cargar_tabla(catalogo_sel.value)
+            cargar_grid(dd_catalogo.value)
         else:
-            toast("Esa película ya existe en el catálogo.", ok=False)
+            make_toast(page, "Esa película ya existe en el catálogo.", ok=False)
 
-    def on_eliminar_seleccionadas(e):
-        if not catalogo_sel.value:
-            toast("Elegí un catálogo primero.", ok=False)
+    def on_delete_selected(e):
+        if not dd_catalogo.value:
+            make_toast(page, "Elegí un catálogo primero.", ok=False)
             return
-        seleccion = []
-        for row in tabla.rows:
-            if row.selected:
-                titulo = row.cells[1].content.value
-                genero = row.cells[2].content.value
-                anio = row.cells[3].content.value or "0"
-                try:
-                    anio = int(anio)
-                except ValueError:
-                    anio = 0
-                seleccion.append(Pelicula(titulo, genero, anio))
-
-        if not seleccion:
-            toast("No hay filas seleccionadas.", ok=False)
+        if not seleccionadas_keys:
+            make_toast(page, "No hay tarjetas seleccionadas.", ok=False)
             return
 
-        catalogo = CatalogoPeliculas(catalogo_sel.value)
-        actuales = catalogo.listar()
-        restantes = [p for p in actuales if all(p.nombre != s.nombre for s in seleccion)]
-        reescribir_catalogo(catalogo, restantes)
-        toast(f"Eliminadas {len(seleccion)} película(s).")
-        cargar_tabla(catalogo_sel.value)
+        cat = CatalogoPeliculas(dd_catalogo.value)
+        actuales = cat.listar()
+        restantes = [p for p in actuales if peli_key(p) not in seleccionadas_keys]
+        reescribir_catalogo(cat, restantes)
+        make_toast(page, f"Eliminadas {len(seleccionadas_keys)} película(s).")
+        cargar_grid(dd_catalogo.value)
 
-    # Bindings
-    btn_refrescar.on_click = on_refrescar
-    catalogo_sel.on_change = on_cambiar_catalogo
-    btn_crear_catalogo.on_click = on_crear_catalogo
-    btn_agregar.on_click = on_agregar_pelicula
-    btn_eliminar_sel.on_click = on_eliminar_seleccionadas
+    # bind
+    btn_refresh.on_click = on_refresh
+    dd_catalogo.on_change = on_change_catalogo
+    btn_crear_cat.on_click = on_create_catalogo
+    btn_add.on_click = on_add_pelicula
+    btn_delete_sel.on_click = on_delete_selected
 
-    # Layout
+    # ---------- layout raíz ----------
     page.add(
         ft.Column(
-            spacing=16,
+            expand=True,
             controls=[
-                ft.Row(
-                    controls=[
-                        catalogo_sel,
-                        btn_refrescar,
-                        ft.Container(width=16),
-                        nuevo_catalogo,
-                        btn_crear_catalogo,
-                        ft.Container(width=16),
-                        info_catalogo,
-                    ],
-                    alignment=ft.MainAxisAlignment.START,
-                    vertical_alignment=ft.CrossAxisAlignment.CENTER,
+                hero,
+                ft.Container(
+                    padding=16,
+                    content=ft.Row(
+                        expand=True,
+                        alignment=ft.MainAxisAlignment.START,
+                        vertical_alignment=ft.CrossAxisAlignment.START,
+                        controls=[
+                            side_panel,
+                            ft.Container(width=12),
+                            ft.Container(
+                                expand=True,
+                                bgcolor="transparent",
+                                content=grid,
+                            ),
+                        ],
+                    ),
                 ),
-                ft.Divider(),
-                ft.Row(
-                    controls=[tf_nombre, tf_anio, btn_agregar, btn_eliminar_sel],
-                    alignment=ft.MainAxisAlignment.START,
-                ),
-                ft.Container(height=8),
-                ft.Container(content=tabla, expand=True),
             ],
         )
     )
 
+    # estado inicial
     if catalogos:
-        catalogo_sel.value = catalogos[0]
-        cargar_tabla(catalogos[0])
-    page.update()
-
+        dd_catalogo.value = catalogos[0]
+        cargar_grid(catalogos[0])
+    else:
+        page.update()
 
 if __name__ == "__main__":
     ft.app(target=main)
-
